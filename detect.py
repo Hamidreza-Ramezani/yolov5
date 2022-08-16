@@ -47,6 +47,9 @@ from utils.plots import Annotator, colors, save_one_box
 from utils.torch_utils import select_device, smart_inference_mode, time_sync
 
 
+
+runtime_log = open("runtime.txt", "w+")
+
 @smart_inference_mode()
 def run(
         weights=ROOT / 'yolov5s.pt',  # model.pt path(s)
@@ -203,6 +206,10 @@ def run(
         # Print time (inference-only)
         LOGGER.info(f'{s}Done. ({t3 - t2:.3f}s)')
 
+        performance=(float("{:.5f}".format(t3)) - float("{:.5f}".format(t2)))*1000
+        runtime_log.write('{:.2f}\n'.format(performance))
+        runtime_log.flush()
+
     # Print results
     t = tuple(x / seen * 1E3 for x in dt)  # speeds per image
     LOGGER.info(f'Speed: %.1fms pre-process, %.1fms inference, %.1fms NMS per image at shape {(1, 3, *imgsz)}' % t)
@@ -250,6 +257,7 @@ def parse_opt():
 def main(opt):
     check_requirements(exclude=('tensorboard', 'thop'))
     run(**vars(opt))
+    runtime_log.close()
 
 
 if __name__ == "__main__":
